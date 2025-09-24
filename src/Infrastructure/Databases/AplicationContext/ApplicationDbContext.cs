@@ -1,9 +1,9 @@
 using Application.Abstractions.Data;
 using Domain.Models;
-using Infrastructure.Database.Tenants;
+using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Database
+namespace Infrastructure.Databases.AplicationContext
 {
     /// <summary>
     /// Represents the main database context for the application, implementing Entity Framework Core DbContext

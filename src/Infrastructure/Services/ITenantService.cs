@@ -1,14 +1,15 @@
 ﻿#nullable enable
 
-namespace Infrastructure.Database.Tenants
+using Infrastructure;
+
+namespace Infrastructure.Services
 {
     public interface ITenantService
     {
         string TenantId { get; }
         string? ConnectionString { get; }
-        void SetTenant(string tenantId);
-        string GetConnectionString();
-        void SetConnectionString(string connectionString);
+        void SetTenantId(string tenantId);
+        void GetConnectionString();
         void SetIdentityTenant();
 
         //event TenantChangedEventHandler OnTenantChanged;

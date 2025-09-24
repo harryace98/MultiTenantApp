@@ -1,9 +1,10 @@
 using Application;
-using Serilog;
-using MultiTenantApp.API;
 using Infrastructure;
-using MultiTenantApp.API.Middleware;
 using Infrastructure.Extensions;
+using Microsoft.AspNetCore.Http.Timeouts;
+using MultiTenantApp.API;
+using MultiTenantApp.API.Middleware;
+using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,13 +16,20 @@ builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configu
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+    //options.AddPolicy("AllowFrontend", policy =>
+    //{
+    //    policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+    //          .AllowAnyHeader()
+    //          .AllowAnyMethod()
+    //          .AllowCredentials();
+    //});
+    options.AddPolicy("AllowAll",
+            builder =>
+            {
+                builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+            });
 });
 builder.Services
     .AddApplication()
@@ -30,12 +38,33 @@ builder.Services
 
 builder.Services.AddControllers();
 
+builder.Services.AddRequestTimeouts(options =>
+{
+    // Timeout por defecto de 30 segundos
+    options.DefaultPolicy = new RequestTimeoutPolicy
+    {
+        Timeout = TimeSpan.FromSeconds(5)
+    };
+
+    //// Definir políticas con nombre
+    //options.AddPolicy("ShortTimeout", new RequestTimeoutPolicy
+    //{
+    //    Timeout = TimeSpan.FromSeconds(5)
+    //});
+
+    //options.AddPolicy("LongTimeout", new RequestTimeoutPolicy
+    //{
+    //    Timeout = TimeSpan.FromMinutes(2)
+    //});
+});
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
-
 var app = builder.Build();
+app.UseRequestTimeouts();
 
 
 app.MapDefaultEndpoints();

@@ -6,13 +6,15 @@ using MultiTenantApp.API.Extensions;
 using MultiTenantApp.API.Infrastructure;
 using SharedKernel;
 
-namespace MultiTenantApp.API.Controllers {
+namespace MultiTenantApp.API.Controllers
+{
     [ApiController]
     [Route("api/[controller]")]
-    public class LoginController(LoginQueryHandler userManagementQuery) : ControllerBase {
+    public class LoginController(LoginQueryHandler userManagementQuery) : ControllerBase
+    {
         [HttpPost]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDTO loginRequest)
-            {
+        {
             if (!ModelState.IsValid)
                 return CustomResults.Problem(Result.Failure(Error.Problem("General.ModelInvalid", ModelState.SerializeModelStateErrors())));
 
@@ -21,6 +23,6 @@ namespace MultiTenantApp.API.Controllers {
                 value => CustomResults.Success<object>(value),
                 CustomResults.Problem
             );
-            }
         }
     }
+}

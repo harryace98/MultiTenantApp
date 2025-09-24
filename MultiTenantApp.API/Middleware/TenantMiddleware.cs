@@ -1,5 +1,6 @@
-﻿using Infrastructure.Authorization.Extensions;
-using Infrastructure.Database.Tenants;
+﻿using Application.Abstractions.Data;
+using Infrastructure.Authorization.Extensions;
+using Infrastructure.Services;
 
 namespace MultiTenantApp.API.Middleware
 {
@@ -26,7 +27,7 @@ namespace MultiTenantApp.API.Middleware
                 return;
             }
 
-            tenantProvider.SetTenant(tenantIdFromToken);
+            tenantProvider.SetTenantId(tenantIdFromToken);
 
             await _next(context);
         }

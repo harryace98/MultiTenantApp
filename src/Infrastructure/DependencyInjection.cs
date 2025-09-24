@@ -2,8 +2,10 @@
 using Application.Abstractions.Data;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
-using Infrastructure.Database;
 using Infrastructure.Database.Tenants;
+using Infrastructure.Databases.AplicationContext;
+using Infrastructure.Databases.TenantContext;
+using Infrastructure.Services;
 using Infrastructure.Time;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -53,7 +55,7 @@ public static class DependencyInjection
         });
 
         // Register our custom factory
-        services.AddSingleton<IDbContextFactory<ApplicationDbContext>, MultiTenantDbContextFactory>();
+        services.AddScoped<IDbContextFactory<ApplicationDbContext>, ApplicationDbContextFactory>();
 
         // Register the DbContext as scoped
         services.AddScoped<IApplicationDbContext>(provider =>

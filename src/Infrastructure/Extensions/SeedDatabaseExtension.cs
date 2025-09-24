@@ -25,7 +25,7 @@ namespace Infrastructure.Extensions
 
             // Crea un TenantService con valores fijos para el seed
             var tenantService = new TenantService(configuration);
-            tenantService.SetTenant("base"); // O el tenant que corresponda
+            tenantService.SetTenantId("base"); // O el tenant que corresponda
             // Si tu TenantService requiere el connection string, asígnalo
             tenantService.SetConnectionString(baseConnectionString);
 
