@@ -1,5 +1,8 @@
 ﻿using Domain.Models;
 using Infrastructure.Database;
+using Infrastructure.Database.Tenants;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -16,15 +19,30 @@ namespace Infrastructure.Extensions
         {
             using var scope = host.Services.CreateScope();
 
-            var services = scope.ServiceProvider;
-            var context = services.GetRequiredService<ApplicationDbContext>();
+            // Obtén la configuración y crea un TenantService manualmente
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            var baseConnectionString = configuration.GetConnectionString("baseDatabase");
+
+            // Crea un TenantService con valores fijos para el seed
+            var tenantService = new TenantService(configuration);
+            tenantService.SetTenant("base"); // O el tenant que corresponda
+            // Si tu TenantService requiere el connection string, asígnalo
+            tenantService.SetConnectionString(baseConnectionString);
+
+            // Crea las opciones del DbContext
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            optionsBuilder.UseNpgsql(baseConnectionString);
+
+            // Crea el contexto directamente, sin factory ni DI
+            using var context = new ApplicationDbContext(optionsBuilder.Options, tenantService);
+
             try
             {
                 context.Database.EnsureCreated();
                 DbInitializer.SeedDatabase(context);
             }
             catch (Exception ex)
-                {
+            {
                 // Consider adding proper logging here
             }
         }

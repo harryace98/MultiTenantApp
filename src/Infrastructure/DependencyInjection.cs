@@ -3,6 +3,7 @@ using Application.Abstractions.Data;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
 using Infrastructure.Database;
+using Infrastructure.Database.Tenants;
 using Infrastructure.Time;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -44,13 +45,22 @@ public static class DependencyInjection
     private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         string? connectionString = configuration.GetConnectionString("baseDatabase");
-
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddScoped<ITenantService, TenantService>();
+        // Configure the DbContext options
+        services.AddDbContextOptions<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
         });
 
-        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        // Register our custom factory
+        services.AddSingleton<IDbContextFactory<ApplicationDbContext>, MultiTenantDbContextFactory>();
+
+        // Register the DbContext as scoped
+        services.AddScoped<IApplicationDbContext>(provider =>
+        {
+            var factory = provider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+            return factory.CreateDbContext();
+        });
 
         return services;
     }
@@ -101,6 +111,24 @@ public static class DependencyInjection
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 
+
+        return services;
+    }
+}
+
+// Add this extension method to handle DbContext options registration
+public static class DbContextOptionsExtensions
+{
+    public static IServiceCollection AddDbContextOptions<TContext>(
+        this IServiceCollection services,
+        Action<DbContextOptionsBuilder> optionsAction) where TContext : DbContext
+    {
+        services.AddSingleton(serviceProvider =>
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<TContext>();
+            optionsAction(optionsBuilder);
+            return optionsBuilder.Options;
+        });
 
         return services;
     }

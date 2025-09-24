@@ -11,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container.
-
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddCors(options =>
@@ -47,8 +46,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseMiddleware<RequestContextLoggingMiddleware>();
 
+app.UseHttpsRedirection();
+// Use custom tenant middleware
+app.UseTenantMiddleware();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
@@ -57,5 +59,4 @@ app.MapControllers();
 
 if (app.Environment.IsDevelopment())
     app.CreateDbIfNotExists();
-
 app.Run();
